@@ -7,11 +7,22 @@ from utils.embeddings import get_embedding, load_custom_embeddings
 from classifier import classify_embedding
 from pdf2image import convert_from_bytes
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import requests
 from export import export_form
 from tempfile import NamedTemporaryFile
 app = FastAPI()
+origins = [
+    "https://formhelper.vercel.app",
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,    
+    allow_credentials=True,
+    allow_methods=["*"],            
+    allow_headers=["*"],           
+)
 custom_embeddings, custom_labels = load_custom_embeddings()
 
 @app.post("/classify")

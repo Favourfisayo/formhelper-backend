@@ -17,7 +17,11 @@ def fit_text_to_box(draw, text, box, font_path="arial.ttf", max_size=28, min_siz
     box_w, box_h = x2 - x1, y2 - y1
 
     for size in range(max_size, min_size, -1):
-        font = ImageFont.truetype(font_path, size)
+        try:
+            font = ImageFont.truetype(font_path, size)
+        except OSError:
+            font = ImageFont.load_default()
+
         bbox = draw.textbbox((0, 0), text, font=font)
         text_w = bbox[2] - bbox[0]
         text_h = bbox[3] - bbox[1]

@@ -45,9 +45,6 @@ def get_embedding_from_path(image_path, model = MODEL):
         with torch.no_grad():
             features = model(img_tensor)
             features_np = features.squeeze().numpy()
-        del features, img_tensor
-        import gc
-        gc.collect()
         return features_np
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
@@ -87,10 +84,6 @@ def get_embedding(file_bytes: bytes, filename: str, model=MODEL):
         with torch.no_grad():
             features = model(img_tensor)
             features_np = features.squeeze().numpy()
-
-        del features, img_tensor
-        import gc
-        gc.collect()
 
         return features_np
     except Exception as e:
