@@ -31,7 +31,11 @@ def get_embedding_from_path(image_path):
     try:
         model = get_resnet50_model() 
         if image_path.lower().endswith(".pdf"):
-            pages = convert_from_path(image_path, dpi=200, poppler_path=r"c:\poppler-25.07.0\Library\bin")
+            import platform
+            poppler_path = None
+            if platform.system() == "Windows":
+                poppler_path = r"c:\poppler-25.07.0\Library\bin"
+            pages = convert_from_path(image_path, dpi=200, poppler_path=poppler_path)
             image = pages[0]
         else:
             image = Image.open(image_path).convert("RGB")

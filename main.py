@@ -12,7 +12,7 @@ from export import export_form
 from tempfile import NamedTemporaryFile
 app = FastAPI()
 
-custom_embeddings, custom_labels = load_custom_embeddings(samples_folder="samples")
+custom_embeddings, custom_labels = load_custom_embeddings()
 
 @app.post("/classify")
 async def classify_form(file: UploadFile = File(...)):
