@@ -8,10 +8,15 @@ from torchvision.models import ResNet50_Weights
 import os
 import numpy as np
 
-weights = ResNet50_Weights.DEFAULT   # most up-to-date weights
-model = models.resnet50(weights=weights)
-model = torch.nn.Sequential(*list(model.children())[:-1])
-model.eval() 
+def get_resnet50_model():
+    weights = ResNet50_Weights.DEFAULT
+    model = models.resnet50(weights=weights)
+    model = torch.nn.Sequential(*list(model.children())[:-1])
+    model.eval()
+    # move to FP16 to save memory
+    model = model.half()
+    return model
+
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),  # resize to standard size
@@ -24,6 +29,7 @@ transform = transforms.Compose([
 def get_embedding_from_path(image_path):
     """Return embedding from an image/pdf on disk."""
     try:
+        model = get_resnet50_model() 
         if image_path.lower().endswith(".pdf"):
             pages = convert_from_path(image_path, dpi=200, poppler_path=r"c:\poppler-25.07.0\Library\bin")
             image = pages[0]
@@ -33,7 +39,11 @@ def get_embedding_from_path(image_path):
         img_tensor = transform(image).unsqueeze(0)
         with torch.no_grad():
             features = model(img_tensor)
-        return features.squeeze().numpy()
+            features_np = features.squeeze().numpy()
+        del model, features, img_tensor
+        import gc
+        gc.collect()
+        return features_np
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
         return None
@@ -66,13 +76,19 @@ def get_embedding(file_bytes: bytes, filename: str):
     filename: the original file name, to detect PDF vs image
     """
     try:
+        model = get_resnet50_model()
         image = Image.open(BytesIO(file_bytes)).convert("RGB")
     
         img_tensor = transform(image).unsqueeze(0)
         with torch.no_grad():
             features = model(img_tensor)
-        features = features.squeeze().numpy()
-        return features
+            features_np = features.squeeze().numpy()
+
+        del model, features, img_tensor
+        import gc
+        gc.collect()
+
+        return features_np
     except Exception as e:
         print(f'Error processing {filename}: {e}')
 
