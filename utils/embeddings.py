@@ -95,11 +95,12 @@ def get_embedding(file_bytes: bytes, filename: str):
         return features_np
     except Exception as e:
         print(f'Error processing {filename}: {e}')
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+MODELS_DIR = os.path.join(REPO_ROOT, "models")
 
 def load_custom_embeddings():
-    models_dir = os.path.join(os.path.dirname(__file__), "models")
-    embeddings_file = os.path.join(models_dir, "custom_embeddings.npy")
-    labels_file = os.path.join(models_dir, "custom_labels.npy")
+    embeddings_file = os.path.join(MODELS_DIR, "custom_embeddings.npy")
+    labels_file = os.path.join(MODELS_DIR, "custom_labels.npy")
 
     if os.path.exists(embeddings_file) and os.path.exists(labels_file):
         print("Loaded cached embeddings from disk")
