@@ -4,16 +4,17 @@ from PIL import Image
 import torchvision.transforms as transforms
 import torch
 import torchvision.models as models
-from torchvision.models import ResNet50_Weights
+from torchvision.models import ResNet18_Weights
 import os
 import numpy as np
 
-def get_resnet50_model():
-    weights = ResNet50_Weights.DEFAULT
-    model = models.resnet50(weights=weights)
+def get_resnet_model():
+    weights = ResNet18_Weights.DEFAULT
+    model = models.resnet18(weights=weights)
+    # Remove the final classification layer to get embeddings
     model = torch.nn.Sequential(*list(model.children())[:-1])
     model.eval()
-    # move to FP16 to save memory
+    # Optional: FP16 to save memory
     model = model.half()
     return model
 
@@ -29,7 +30,7 @@ transform = transforms.Compose([
 def get_embedding_from_path(image_path):
     """Return embedding from an image/pdf on disk."""
     try:
-        model = get_resnet50_model() 
+        model = get_resnet_model() 
         if image_path.lower().endswith(".pdf"):
             import platform
             poppler_path = None
@@ -80,7 +81,7 @@ def get_embedding(file_bytes: bytes, filename: str):
     filename: the original file name, to detect PDF vs image
     """
     try:
-        model = get_resnet50_model()
+        model = get_resnet_model()
         image = Image.open(BytesIO(file_bytes)).convert("RGB")
     
         img_tensor = transform(image).unsqueeze(0)
