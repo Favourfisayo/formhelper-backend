@@ -92,7 +92,7 @@ def get_embedding(file_bytes: bytes, filename: str):
     except Exception as e:
         print(f'Error processing {filename}: {e}')
 
-def load_custom_embeddings(samples_folder="samples"):
+def load_custom_embeddings():
     models_dir = os.path.join(os.path.dirname(__file__), "models")
     embeddings_file = os.path.join(models_dir, "custom_embeddings.npy")
     labels_file = os.path.join(models_dir, "custom_labels.npy")
@@ -102,9 +102,7 @@ def load_custom_embeddings(samples_folder="samples"):
         custom_embeddings = np.load(embeddings_file, allow_pickle=True)
         custom_labels = np.load(labels_file, allow_pickle=True)
     else:
-        print("No cached embeddings found. Building embeddings...")
-        build_embeddings(samples_folder)
-        custom_embeddings = np.load(embeddings_file, allow_pickle=True)
-        custom_labels = np.load(labels_file, allow_pickle=True)
+        raise FileNotFoundError("Cached embeddings not found. Upload .npy files to the models/ folder in your repo.")
 
     return custom_embeddings, custom_labels
+
