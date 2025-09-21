@@ -18,6 +18,7 @@ def get_resnet_model():
     model = model.half()
     return model
 
+MODEL = get_resnet_model()
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),  # resize to standard size
@@ -27,10 +28,9 @@ transform = transforms.Compose([
     transforms.CenterCrop(224)
 ])
 
-def get_embedding_from_path(image_path):
+def get_embedding_from_path(image_path, model = MODEL):
     """Return embedding from an image/pdf on disk."""
     try:
-        model = get_resnet_model() 
         if image_path.lower().endswith(".pdf"):
             import platform
             poppler_path = None
@@ -41,11 +41,11 @@ def get_embedding_from_path(image_path):
         else:
             image = Image.open(image_path).convert("RGB")
 
-        img_tensor = transform(image).unsqueeze(0)
+        img_tensor = transform(image).unsqueeze(0).half()
         with torch.no_grad():
             features = model(img_tensor)
             features_np = features.squeeze().numpy()
-        del model, features, img_tensor
+        del features, img_tensor
         import gc
         gc.collect()
         return features_np
@@ -74,22 +74,21 @@ def build_embeddings(samples_folder):
     else:
         print("No sample files found to build embeddings.")
         
-def get_embedding(file_bytes: bytes, filename: str):
+def get_embedding(file_bytes: bytes, filename: str, model=MODEL):
     """
     Returns the embedding vector of an uploaded file.
     file: bytes of the uploaded form image
     filename: the original file name, to detect PDF vs image
     """
     try:
-        model = get_resnet_model()
         image = Image.open(BytesIO(file_bytes)).convert("RGB")
     
-        img_tensor = transform(image).unsqueeze(0)
+        img_tensor = transform(image).unsqueeze(0).half()
         with torch.no_grad():
             features = model(img_tensor)
             features_np = features.squeeze().numpy()
 
-        del model, features, img_tensor
+        del features, img_tensor
         import gc
         gc.collect()
 
